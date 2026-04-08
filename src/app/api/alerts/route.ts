@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest) {
   if (action === 'dismiss') {
     const { error } = await supabase
       .from('alerts')
+      // @ts-expect-error -- Supabase generic type inference
       .update({ dismissed_at: new Date().toISOString() })
       .eq('id', alert_id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

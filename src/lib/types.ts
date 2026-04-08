@@ -132,3 +132,31 @@ export interface RateTrend {
   max_rate: number
   avg_rate: number
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyRecord = Record<string, any>
+
+export type Database = {
+  public: {
+    Tables: {
+      organizations: { Row: AnyRecord; Insert: AnyRecord; Update: AnyRecord }
+      hotels: { Row: Hotel; Insert: AnyRecord; Update: AnyRecord }
+      users: { Row: AnyRecord; Insert: AnyRecord; Update: AnyRecord }
+      competitors: { Row: Competitor; Insert: AnyRecord; Update: AnyRecord }
+      rate_snapshots: { Row: RateSnapshot; Insert: AnyRecord; Update: AnyRecord }
+      alerts: { Row: Alert; Insert: AnyRecord; Update: AnyRecord }
+      scrape_jobs: { Row: AnyRecord; Insert: AnyRecord; Update: AnyRecord }
+    }
+    Views: AnyRecord
+    Functions: {
+      get_dashboard_rates: {
+        Args: { p_hotel_id: string; p_check_in_date: string }
+        Returns: DashboardRate[]
+      }
+      get_room_types: {
+        Args: { p_competitor_id: string; p_check_in_date: string }
+        Returns: RoomTypeRate[]
+      }
+    }
+  }
+}

@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   if (expanded) {
     // Return all room types for one competitor
     const { data, error } = await supabase
+      // @ts-expect-error -- Supabase generic type inference
       .rpc('get_room_types', {
         p_competitor_id: expanded,
         p_check_in_date: checkIn
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
 
   // Return BAR comparison table
   const { data, error } = await supabase
+    // @ts-expect-error -- Supabase generic type inference
     .rpc('get_dashboard_rates', {
       p_hotel_id: hotelId,
       p_check_in_date: checkIn

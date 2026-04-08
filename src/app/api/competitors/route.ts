@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('competitors')
+    // @ts-expect-error -- Supabase generic type inference
     .update(updates)
     .eq('id', id)
     .select()
@@ -53,6 +54,7 @@ export async function DELETE(req: NextRequest) {
 
   const { error } = await supabase
     .from('competitors')
+    // @ts-expect-error -- Supabase generic type inference
     .update({ is_active: false })
     .eq('id', id!)
 
