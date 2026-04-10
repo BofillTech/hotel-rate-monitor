@@ -80,12 +80,11 @@ export default async function PublicDashboardPage({
   /* 1. Validate token */
   const { data: link } = await (supabase as any)
     .from('dashboard_links')
-    .select('hotel_id, is_active, expires_at')
+    .select('hotel_id, is_active')
     .eq('token', token)
     .single()
 
   if (!link || !link.is_active) notFound()
-  if (link.expires_at && new Date(link.expires_at) < new Date()) notFound()
 
   const hotelId = link.hotel_id
 
