@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { PublicDashboardClient } from './PublicDashboardClient'
 
 /* ------------------------------------------------------------------ */
-/*  Types for data we pass to the client                              */
+/*  Types for data we pass to the client                               */
 /* ------------------------------------------------------------------ */
 
 export interface CompetitorWithRates {
@@ -37,10 +37,7 @@ export interface CompetitorWithRates {
   }>
 }
 
-export interface TrendPoint {
-  date: string
-  rate: number
-}
+export interface TrendPoint { date: string; rate: number }
 
 export interface TrendSeries {
   competitorId: string
@@ -66,7 +63,7 @@ export interface DashboardData {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Server component                                                  */
+/*  Server component                                                   */
 /* ------------------------------------------------------------------ */
 
 export default async function PublicDashboardPage({
@@ -85,7 +82,6 @@ export default async function PublicDashboardPage({
     .single()
 
   if (!link || !link.is_active) notFound()
-
   const hotelId = link.hotel_id
 
   /* 2. Get hotel */
@@ -110,17 +106,17 @@ export default async function PublicDashboardPage({
   /* 4. Date options */
   const today = new Date()
   const fmt = (d: Date) => d.toISOString().split('T')[0]
-  const addDays = (d: Date, n: number) => { const r = new Date(d); r.setDate(r.getDate() + n); return r }
+  const addDays = (d: Date, n: number) => {
+    const r = new Date(d); r.setDate(r.getDate() + n); return r
+  }
   const dayOfWeek = today.getDay()
   const daysUntilSat = dayOfWeek === 6 ? 0 : (6 - dayOfWeek)
-
   const dateOptions = [
-    { label: 'Tonight',  value: fmt(today) },
-    { label: 'Weekend',  value: fmt(addDays(today, daysUntilSat)) },
-    { label: '+7 Days',  value: fmt(addDays(today, 7)) },
+    { label: 'Tonight', value: fmt(today) },
+    { label: 'Weekend', value: fmt(addDays(today, daysUntilSat)) },
+    { label: '+7 Days', value: fmt(addDays(today, 7)) },
     { label: '+30 Days', value: fmt(addDays(today, 30)) },
   ]
-
   const checkInDates = dateOptions.map(d => d.value)
 
   /* 5. Get rate snapshots for all check-in dates */
@@ -143,11 +139,14 @@ export default async function PublicDashboardPage({
     return true
   })
 
+  /* Detect self-competitor: name match OR try stored function */
+  const hotelNameNorm = hotel.name.toLowerCase().trim()
+
   /* Build competitor data with rates_by_date */
   const competitorsWithRates: CompetitorWithRates[] = comps.map((c: any) => {
-    const isSelf = c.name.toLowerCase().trim() === hotel.name.toLowerCase().trim()
-    const ratesByDate: CompetitorWithRates['rates_by_date'] = {}
+    const isSelf = c.name.toLowerCase().trim() === hotelNameNorm
 
+    const ratesByDate: CompetitorWithRates['rates_by_date'] = {}
     for (const dateOpt of dateOptions) {
       const dateSnaps = deduped.filter(
         (s: any) => s.competitor_id === c.id && s.check_in_date === dateOpt.value
@@ -190,6 +189,7 @@ export default async function PublicDashboardPage({
 
   /* 6. Get 30-day trend data */
   const thirtyDaysAgo = fmt(addDays(today, -30))
+
   const { data: trendSnaps } = await (supabase as any)
     .from('rate_snapshots')
     .select('competitor_id, check_in_date, rate_amount, scraped_at')
@@ -209,17 +209,12 @@ export default async function PublicDashboardPage({
   }
 
   const trendSeries: TrendSeries[] = comps.map((c: any) => {
-    const isSelf = c.name.toLowerCase().trim() === hotel.name.toLowerCase().trim()
+    const isSelf = c.name.toLowerCase().trim() === hotelNameNorm
     const dayRates = trendMap.get(c.id) || new Map()
     const data: TrendPoint[] = Array.from(dayRates.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, rate]) => ({ date, rate }))
-    return {
-      competitorId: c.id,
-      competitorName: c.name,
-      isSelf,
-      data,
-    }
+    return { competitorId: c.id, competitorName: c.name, isSelf, data }
   })
 
   /* 7. Assemble dashboard data */
