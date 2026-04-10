@@ -41,10 +41,14 @@ export async function middleware(req: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
 
   const isAuthPage = req.nextUrl.pathname.startsWith('/login')
-  const isDashboard = req.nextUrl.pathname.startsWith('/dashboard') ||
-                      req.nextUrl.pathname.startsWith('/competitors') ||
-                      req.nextUrl.pathname.startsWith('/alerts') ||
-                      req.nextUrl.pathname.startsWith('/settings')
+  // Public token-based dashboards don't require auth
+  const isPublicDashboard = /^\/dashboard\/[^/]+$/.test(req.nextUrl.pathname)
+  const isDashboard = !isPublicDashboard && (
+    req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/competitors') ||
+    req.nextUrl.pathname.startsWith('/alerts') ||
+    req.nextUrl.pathname.startsWith('/settings')
+  )
 
   if (!session && isDashboard) {
     return NextResponse.redirect(new URL('/login', req.url))
