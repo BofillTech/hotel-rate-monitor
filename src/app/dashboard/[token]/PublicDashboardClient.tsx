@@ -13,13 +13,17 @@ const HOTEL_COLORS = ['#378ADD','#639922','#E24B4A','#EF9F27','#7F77DD','#1D9E75
 const VIEWS = ['Tonight','Weekend','+7 Days','+30 Days']
 
 /* ------------------------------------------------------------------ */
-/*  Source display helpers                                            */
+/*  Source display helpers                                             */
 /* ------------------------------------------------------------------ */
 
 function sourceLabel(src: string) {
   const map: Record<string, string> = {
-    pms_api: 'PMS', booking_com: 'Booking', expedia: 'Expedia',
-    direct: 'Direct', manual: 'Manual', unknown: 'â',
+    pms_api: 'PMS',
+    booking_com: 'Booking',
+    expedia: 'Expedia',
+    direct: 'Direct',
+    manual: 'Manual',
+    unknown: '\u2014',
   }
   return map[src] || src
 }
@@ -27,14 +31,17 @@ function sourceLabel(src: string) {
 function categoryLabel(cat: string | null) {
   if (!cat) return null
   const map: Record<string, string> = {
-    standard: 'Standard', ocean_view: 'Oceanfront', suite: 'Suite',
-    pool_view: 'Pool view', other: 'Other',
+    standard: 'Standard',
+    ocean_view: 'Oceanfront',
+    suite: 'Suite',
+    pool_view: 'Pool view',
+    other: 'Other',
   }
   return map[cat] || cat
 }
 
 /* ------------------------------------------------------------------ */
-/*  Rate Comparison Table with expand/collapse                        */
+/*  Rate Comparison Table with expand/collapse                         */
 /* ------------------------------------------------------------------ */
 
 function RateComparisonSection({
@@ -130,24 +137,25 @@ function RateComparisonSection({
             const isOpen = expanded.has(row.competitor_id)
             const barRate = row.bar?.rate_amount ?? null
             const diff = selfRate !== null && barRate !== null && !row.is_self
-              ? barRate - selfRate : null
+              ? barRate - selfRate
+              : null
             const isMin = !row.is_self && barRate !== null && barRate === marketMin
             const isMax = !row.is_self && barRate !== null && barRate === marketMax
-            const hasMultipleRooms = row.roomTypes.length > 1
+            const hasRoomTypes = row.roomTypes.length > 0
 
             return (
               <tbody key={row.competitor_id}>
                 {/* Main row */}
                 <tr
-                  onClick={() => hasMultipleRooms && toggleExpand(row.competitor_id)}
+                  onClick={() => hasRoomTypes && toggleExpand(row.competitor_id)}
                   className={`border-b border-gray-50 transition-colors ${
-                    row.is_self ? 'bg-blue-50/40' : hasMultipleRooms ? 'hover:bg-gray-50 cursor-pointer' : ''
+                    row.is_self ? 'bg-blue-50/40' : hasRoomTypes ? 'hover:bg-gray-50 cursor-pointer' : ''
                   }`}
                 >
                   <td className="px-3 py-3 text-center">
-                    {hasMultipleRooms && (
+                    {hasRoomTypes && (
                       <span className={`text-[10px] text-gray-400 transition-transform inline-block ${isOpen ? 'rotate-90' : ''}`}>
-                        â¶
+                        {'\u25B6'}
                       </span>
                     )}
                   </td>
@@ -168,12 +176,12 @@ function RateComparisonSection({
                         {formatCurrency(barRate, currency)}
                       </span>
                     ) : (
-                      <span className="text-gray-300">â</span>
+                      <span className="text-gray-300">{'\u2014'}</span>
                     )}
                   </td>
                   <td className="px-3 py-3 text-right">
                     {diff === null ? (
-                      <span className="text-gray-300">â</span>
+                      <span className="text-gray-300">{'\u2014'}</span>
                     ) : (
                       <span className={`text-xs font-medium ${diff < 0 ? 'text-green-600' : diff > 0 ? 'text-red-500' : 'text-gray-400'}`}>
                         {diff > 0 ? '+' : ''}{formatCurrency(diff, currency)}
@@ -184,10 +192,10 @@ function RateComparisonSection({
                     {row.bar?.room_type_name || 'Standard Room'}
                   </td>
                   <td className="px-3 py-3 text-xs text-gray-400">
-                    {row.bar ? sourceLabel(row.bar.source) : 'â'}
+                    {row.bar ? sourceLabel(row.bar.source) : '\u2014'}
                   </td>
                   <td className="px-3 py-3 text-right text-xs text-gray-400">
-                    {row.bar?.scraped_at ? formatRelativeTime(row.bar.scraped_at) : 'â'}
+                    {row.bar?.scraped_at ? formatRelativeTime(row.bar.scraped_at) : '\u2014'}
                   </td>
                 </tr>
 
@@ -228,7 +236,7 @@ function RateComparisonSection({
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> Highest</span>
         </div>
         <div className="text-[10px] text-gray-400">
-          Rates pulled from OTA &amp; direct sources Â· may include OTA markup
+          Rates pulled from OTA & direct sources {'\u00B7'} may include OTA markup
         </div>
       </div>
     </div>
@@ -236,16 +244,23 @@ function RateComparisonSection({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Scrape Health Section                                             */
+/*  Scrape Health Section                                              */
 /* ------------------------------------------------------------------ */
 
 function ScrapeHealthSection({ competitors }: { competitors: CompetitorWithRates[] }) {
   const statusColor: Record<string, string> = {
-    ok: 'bg-green-400', pending: 'bg-amber-400', error: 'bg-red-400',
-    blocked: 'bg-red-400', manual: 'bg-gray-400',
+    ok: 'bg-green-400',
+    pending: 'bg-amber-400',
+    error: 'bg-red-400',
+    blocked: 'bg-red-400',
+    manual: 'bg-gray-400',
   }
   const statusLabel: Record<string, string> = {
-    ok: 'OK', pending: 'Pending', error: 'Error', blocked: 'Blocked', manual: 'Manual',
+    ok: 'OK',
+    pending: 'Pending',
+    error: 'Error',
+    blocked: 'Blocked',
+    manual: 'Manual',
   }
 
   return (
@@ -261,7 +276,7 @@ function ScrapeHealthSection({ competitors }: { competitors: CompetitorWithRates
               <div>
                 <div className="text-sm text-gray-700">{c.competitor_name}</div>
                 <div className="text-xs text-gray-400">
-                  {c.scrape_method} Â· {c.last_scraped_at ? formatRelativeTime(c.last_scraped_at) : 'never'}
+                  {c.scrape_method} {'\u00B7'} {c.last_scraped_at ? formatRelativeTime(c.last_scraped_at) : 'never'}
                 </div>
               </div>
             </div>
@@ -276,7 +291,7 @@ function ScrapeHealthSection({ competitors }: { competitors: CompetitorWithRates
 }
 
 /* ------------------------------------------------------------------ */
-/*  Main Public Dashboard Client                                      */
+/*  Main Public Dashboard Client                                       */
 /* ------------------------------------------------------------------ */
 
 export function PublicDashboardClient({ data }: { data: DashboardData }) {
@@ -292,7 +307,6 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
     .filter(c => !c.is_self && c.rates_by_date[tonightDate]?.bar)
     .map(c => c.rates_by_date[tonightDate].bar!.rate_amount)
 
-  const allRates = yourRate !== null ? [yourRate, ...compBars] : compBars
   const marketMin = compBars.length ? Math.min(...compBars) : null
   const marketMax = compBars.length ? Math.max(...compBars) : null
   const marketAvg = compBars.length
@@ -318,27 +332,37 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
   const nextCheckMins = hotel.check_frequency_mins || 30
 
   // Rate sources for sidebar
-  const rateSources = []
+  const rateSources: Array<{
+    name: string
+    type: 'primary' | 'backup'
+    description: string
+    rate: number | null
+    currency: string
+    lastChecked: string | null
+    status: 'live' | 'matched' | 'stale' | 'error'
+    parityNote?: string
+  }> = []
+
   if (hotel.pms_platform) {
     rateSources.push({
       name: `${hotel.pms_platform.charAt(0).toUpperCase() + hotel.pms_platform.slice(1)} API`,
-      type: 'primary' as const,
+      type: 'primary',
       description: 'PMS direct',
       rate: yourRate,
       currency: hotel.currency,
       lastChecked: lastRefresh,
-      status: 'live' as const,
+      status: 'live',
     })
   }
   if (hotel.booking_engine_url) {
     rateSources.push({
       name: hotel.booking_engine_url.replace(/^https?:\/\//, '').split('/')[0],
-      type: 'backup' as const,
+      type: 'backup',
       description: 'booking engine',
       rate: yourRate,
       currency: hotel.currency,
       lastChecked: lastRefresh,
-      status: 'matched' as const,
+      status: 'matched',
       parityNote: 'parity OK',
     })
   }
@@ -346,12 +370,12 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
   if (rateSources.length === 0 && selfComp) {
     rateSources.push({
       name: 'Direct rate',
-      type: 'primary' as const,
+      type: 'primary',
       description: 'manual entry',
       rate: yourRate,
       currency: hotel.currency,
       lastChecked: lastRefresh,
-      status: 'live' as const,
+      status: 'live',
     })
   }
 
@@ -364,14 +388,14 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
       color: HOTEL_COLORS[(i + 1) % HOTEL_COLORS.length],
     }))
 
-  // Alerts (placeholder â alerts aren't in the public token query, show none)
+  // Alerts (placeholder)
   const unreadAlerts = 0
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        {/* ââ Header ââââââââââââââââââââââââââââââââââââââ */}
+        {/* -- Header ------------------------------------------------ */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">{hotel.name}</h1>
@@ -380,8 +404,8 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                 Live
               </span>
-              {hotel.city && <span>Â· {hotel.city}{hotel.state ? `, ${hotel.state}` : ''}</span>}
-              {lastRefresh && <span>Â· updated {formatRelativeTime(lastRefresh)}</span>}
+              {hotel.city && <span>{'\u00B7'} {hotel.city}{hotel.state ? `, ${hotel.state}` : ''}</span>}
+              {lastRefresh && <span>{'\u00B7'} updated {formatRelativeTime(lastRefresh)}</span>}
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
@@ -389,7 +413,7 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
           </div>
         </div>
 
-        {/* ââ KPI Cards âââââââââââââââââââââââââââââââââââ */}
+        {/* -- KPI Cards --------------------------------------------- */}
         <KPICards
           yourRate={yourRate}
           marketAvg={marketAvg}
@@ -401,9 +425,9 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
           currency={hotel.currency}
         />
 
-        {/* ââ Main Grid: Table + Sidebar ââââââââââââââââââ */}
+        {/* -- Main Grid: Table + Sidebar ---------------------------- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          {/* Rate comparison table â 2/3 */}
+          {/* Rate comparison table - 2/3 */}
           <div className="lg:col-span-2">
             <RateComparisonSection
               competitors={competitors}
@@ -412,7 +436,7 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
             />
           </div>
 
-          {/* Sidebar â 1/3 */}
+          {/* Sidebar - 1/3 */}
           <div className="space-y-4">
             <RateSourcesPanel sources={rateSources} />
 
@@ -436,21 +460,19 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
           </div>
         </div>
 
-        {/* ââ 30-Day Rate Trends ââââââââââââââââââââââââââ */}
-        <RateTrendChart
-          series={trendSeries}
-          currency={hotel.currency}
-        />
+        {/* -- 30-Day Rate Trends ------------------------------------ */}
+        <RateTrendChart series={trendSeries} currency={hotel.currency} />
 
-        {/* ââ Scrape Health âââââââââââââââââââââââââââââââ */}
+        {/* -- Scrape Health ------------------------------------------ */}
         <div className="mt-4">
           <ScrapeHealthSection competitors={competitors} />
         </div>
 
-        {/* ââ Footer ââââââââââââââââââââââââââââââââââââââ */}
+        {/* -- Footer ------------------------------------------------ */}
         <footer className="text-center text-xs text-gray-400 py-6 mt-4">
-          Powered by Bofill Technologies Â· Rate Monitor
+          Powered by Bofill Technologies {'\u00B7'} Rate Monitor
         </footer>
+
       </div>
     </div>
   )
