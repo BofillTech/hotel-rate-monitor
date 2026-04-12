@@ -1,8 +1,8 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const supabase = createServerClient()
+  const supabase = createServiceClient()
   const { searchParams } = new URL(req.url)
   const hotelId = searchParams.get('hotel_id')
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createServerClient()
+  const supabase = createServiceClient()
   const body = await req.json()
 
   const { data, error } = await supabase
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createServerClient()
+  const supabase = createServiceClient()
   const { id, ...updates } = await req.json()
 
   const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const supabase = createServerClient()
+  const supabase = createServiceClient()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
 
