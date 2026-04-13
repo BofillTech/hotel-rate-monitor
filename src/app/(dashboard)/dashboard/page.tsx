@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   const unreadAlerts = alerts.filter(a => !a.dismissed_at)
   const lastUpdate = rates.length
-    ? formatRelativeTime(Math.max(...rates.map(r => new Date(r.scraped_at).getTime()).filter(Boolean)).toString())
+    ? formatRelativeTime(new Date(Math.max(...rates.map(r => new Date(r.scraped_at).getTime()).filter(Boolean))).toISOString())
     : null
 
   return (
@@ -103,7 +103,7 @@ export default function DashboardPage() {
                 <div className="text-xs font-medium text-gray-700">
                   {hotel?.pms_platform ? hotel.pms_platform.charAt(0).toUpperCase() + hotel.pms_platform.slice(1) : 'PMS'} API
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">Primary · direct</div>
+                <div className="text-xs text-gray-400 mt-0.5">Backup · direct</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
                   {yourRate ? `$${yourRate.rate_amount}` : '—'}
                 </div>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
               </div>
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="text-xs font-medium text-gray-700">Booking engine</div>
-                <div className="text-xs text-gray-400 mt-0.5">Backup · direct URL</div>
+                <div className="text-xs text-gray-400 mt-0.5">Primary · direct URL</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
                   {yourRate ? `$${yourRate.rate_amount}` : '—'}
                 </div>
