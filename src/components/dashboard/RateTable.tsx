@@ -30,7 +30,7 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
       return
     }
     setExpanding(competitorId)
-    const rooms = await onExpandCompetitor(competitorId, new Date().toISOString().split('T')[0])
+    const rooms = await onExpandCompetitor(competitorId, new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }))
     setExpanded(prev => ({ ...prev, [competitorId]: rooms }))
     setExpanding(null)
   }
@@ -98,19 +98,17 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
                 <>
                   <tr
                     key={rate.competitor_id}
-                    onClick={() => !rate.is_your_hotel && toggleExpand(rate.competitor_id)}
-                    className={`border-b border-gray-50 transition-colors ${
+                    onClick={() => toggleExpand(rate.competitor_id)}
+                    className={`border-b border-gray-50 transition-colors cursor-pointer ${
                       rate.is_your_hotel
-                        ? 'bg-blue-50/50'
-                        : 'hover:bg-gray-50 cursor-pointer'
+                        ? 'bg-blue-50/50 hover:bg-blue-50/70'
+                        : 'hover:bg-gray-50'
                     }`}
                   >
                     <td className="px-3 py-3 text-center">
-                      {!rate.is_your_hotel && (
-                        <span className={`text-[10px] text-gray-400 transition-transform inline-block ${isOpen ? 'rotate-90' : ''}`}>
-                          ▶
-                        </span>
-                      )}
+                      <span className={`text-[10px] text-gray-400 transition-transform inline-block ${isOpen ? 'rotate-90' : ''}`}>
+                        ▶
+                      </span>
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
@@ -169,7 +167,14 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
                           {formatCurrency(room.rate_amount)}
                         </span>
                       </td>
-                      <td colSpan={4} />
+                      <td />
+                      <td />
+                      <td className="px-3 py-2.5 text-right">
+                        {room.source && (
+                          <span className="text-xs text-gray-400">{room.source === 'direct' ? 'Direct' : room.source === 'booking_com' ? 'Booking' : room.source}</span>
+                        )}
+                      </td>
+                      <td />
                     </tr>
                   ))}
                 </>
