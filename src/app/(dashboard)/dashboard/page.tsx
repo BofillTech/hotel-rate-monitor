@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useHotel } from '@/hooks/useHotel'
 import { useRates, fetchRoomTypes } from '@/hooks/useRates'
 import { useAlerts, useDismissAlert } from '@/hooks/useAlerts'
@@ -14,8 +15,10 @@ import { formatRelativeTime } from '@/lib/utils'
 const COLORS = ['#378ADD','#639922','#E24B4A','#EF9F27','#7F77DD','#1D9E75']
 
 export default function DashboardPage() {
+  const [checkIn, setCheckIn] = useState<string | undefined>()
+  const [activeView, setActiveView] = useState(0)
   const { data: hotel } = useHotel()
-  const { data: rates = [], isLoading: ratesLoading, refetch } = useRates(hotel?.id)
+  const { data: rates = [], isLoading: ratesLoading, refetch } = useRates(hotel?.id, checkIn)
   const { data: alerts = [] } = useAlerts(hotel?.id)
   const dismissAlert = useDismissAlert()
 
@@ -87,7 +90,9 @@ export default function DashboardPage() {
           <RateTable
             rates={rates}
             onExpandCompetitor={(id, date) => fetchRoomTypes(id, date)}
+            onViewChange={(idx, date) => { setActiveView(idx); setCheckIn(date) }}
             loading={ratesLoading}
+            activeView={activeView}
           />
         </div>
 
