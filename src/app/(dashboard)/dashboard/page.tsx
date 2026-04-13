@@ -46,7 +46,7 @@ export default function DashboardPage() {
           <h1 className="text-xl font-semibold text-gray-900">{hotel?.name || 'Your Hotel'}</h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {lastUpdate ? `Updated ${lastUpdate}` : 'Loading...'}
-            {hotel?.city && ` Â· ${hotel.city}, ${hotel.state}`}
+            {hotel?.city && ` · ${hotel.city}, ${hotel.state}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
       {/* Main content grid */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        {/* Rate table â 2/3 width */}
+        {/* Rate table — 2/3 width */}
         <div className="col-span-2">
           <RateTable
             rates={rates}
@@ -91,7 +91,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Right column â 1/3 width */}
+        {/* Right column — 1/3 width */}
         <div className="space-y-4">
           {/* Your rate sources */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -103,9 +103,9 @@ export default function DashboardPage() {
                 <div className="text-xs font-medium text-gray-700">
                   {hotel?.pms_platform ? hotel.pms_platform.charAt(0).toUpperCase() + hotel.pms_platform.slice(1) : 'PMS'} API
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">Primary Â· direct</div>
+                <div className="text-xs text-gray-400 mt-0.5">Primary · direct</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
-                  {yourRate ? `$${yourRate.rate_amount}` : 'â'}
+                  {yourRate ? `$${yourRate.rate_amount}` : '—'}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -114,9 +114,9 @@ export default function DashboardPage() {
               </div>
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="text-xs font-medium text-gray-700">Booking engine</div>
-                <div className="text-xs text-gray-400 mt-0.5">Backup Â· direct URL</div>
+                <div className="text-xs text-gray-400 mt-0.5">Backup · direct URL</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
-                  {yourRate ? `$${yourRate.rate_amount}` : 'â'}
+                  {yourRate ? `$${yourRate.rate_amount}` : '—'}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -151,7 +151,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Trend chart â full width */}
+      {/* Trend chart — full width */}
       <RateTrendChart
         series={rates.map((r) => ({
           competitorId: r.competitor_id,
