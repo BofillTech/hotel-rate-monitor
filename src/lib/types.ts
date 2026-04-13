@@ -112,6 +112,7 @@ export interface RoomTypeRate {
   room_type_category: RoomTypeCategory | null
   rate_amount: number
   is_bar: boolean
+  source: RateSource
   scraped_at: string
 }
 
