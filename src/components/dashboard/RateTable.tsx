@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 
 const HOTEL_COLORS = ['#378ADD','#639922','#E24B4A','#EF9F27','#7F77DD','#1D9E75','#D85A30','#D4537E','#B4B2A9','#5DCAA5']
 const VIEWS = ['Tonight','Weekend','+7 days','+30 days']
+const OTA_SOURCES = ['booking_com', 'expedia']
 
 interface RateTableProps {
   rates: DashboardRate[]
@@ -17,6 +18,7 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
   const [view, setView] = useState(0)
   const [expanded, setExpanded] = useState<Record<string, RoomTypeRate[]>>({})
   const [expanding, setExpanding] = useState<string | null>(null)
+  const [showOTA, setShowOTA] = useState<Record<string, boolean>>({})
 
   const allRates = rates.filter(r => !r.is_your_hotel).map(r => r.rate_amount)
   const marketMin = allRates.length ? Math.min(...allRates) : 0
@@ -153,30 +155,52 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
                       </td>
                     </tr>
                   )}
-                  {isOpen && expanded[rate.competitor_id]?.map((room, ri) => (
-                    <tr key={`${rate.competitor_id}-room-${ri}`} className="bg-white border-b border-gray-50">
-                      <td />
-                      <td className="px-3 py-2.5 pl-10">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-600">{room.room_type_name || 'Room type'}</span>
-                          {room.is_bar && <Badge variant="teal">BAR</Badge>}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 text-right">
-                        <span className={`text-sm font-medium ${room.is_bar ? 'text-green-700' : 'text-gray-700'}`}>
-                          {formatCurrency(room.rate_amount)}
-                        </span>
-                      </td>
-                      <td />
-                      <td />
-                      <td className="px-3 py-2.5 text-right">
-                        {room.source && (
-                          <span className="text-xs text-gray-400">{room.source === 'direct' ? 'Direct' : room.source === 'booking_com' ? 'Booking' : room.source}</span>
+                  {isOpen && (() => {
+                    const allRooms = expanded[rate.competitor_id] || []
+                    const directRooms = allRooms.filter(r => !OTA_SOURCES.includes(r.source))
+                    const otaRooms = allRooms.filter(r => OTA_SOURCES.includes(r.source))
+                    const visibleRooms = showOTA[rate.competitor_id] ? allRooms : (directRooms.length > 0 ? directRooms : allRooms)
+                    return (
+                      <>
+                        {visibleRooms.map((room, ri) => (
+                          <tr key={`${rate.competitor_id}-room-${ri}`} className="bg-white border-b border-gray-50">
+                            <td />
+                            <td className="px-3 py-2.5 pl-10">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-600">{room.room_type_name || 'Room type'}</span>
+                                {room.is_bar && <Badge variant="teal">BAR</Badge>}
+                                {OTA_SOURCES.includes(room.source) && <span className="text-[10px] text-orange-400 font-medium">OTA</span>}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2.5 text-right">
+                              <span className={`text-sm font-medium ${room.is_bar ? 'text-green-700' : 'text-gray-700'}`}>
+                                {formatCurrency(room.rate_amount)}
+                              </span>
+                            </td>
+                            <td />
+                            <td />
+                            <td className="px-3 py-2.5 text-right">
+                              <span className="text-xs text-gray-400">{room.source === 'direct' ? 'Direct' : room.source === 'booking_com' ? 'Booking' : room.source === 'pms_api' ? 'PMS' : room.source}</span>
+                            </td>
+                            <td />
+                          </tr>
+                        ))}
+                        {otaRooms.length > 0 && (
+                          <tr key={`${rate.competitor_id}-ota-toggle`} className="bg-gray-50/50 border-b border-gray-50">
+                            <td />
+                            <td colSpan={6} className="px-3 py-1.5 pl-10">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setShowOTA(prev => ({ ...prev, [rate.competitor_id]: !prev[rate.competitor_id] })) }}
+                                className="text-[11px] text-blue-500 hover:text-blue-700 font-medium"
+                              >
+                                {showOTA[rate.competitor_id] ? 'Hide OTA rates' : `Show ${otaRooms.length} OTA rate${otaRooms.length > 1 ? 's' : ''}`}
+                              </button>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td />
-                    </tr>
-                  ))}
+                      </>
+                    )
+                  })()}
                 </>
               )
             })
