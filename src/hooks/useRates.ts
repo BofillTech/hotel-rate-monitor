@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { DashboardRate, RoomTypeRate } from '@/lib/types'
 
 export function useRates(hotelId?: string, checkIn?: string) {
-  const date = checkIn || new Date().toISOString().split('T')[0]
+  const date = checkIn || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
   return useQuery<DashboardRate[]>({
     queryKey: ['rates', hotelId, date],
     queryFn: async () => {
