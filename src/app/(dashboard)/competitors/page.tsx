@@ -214,8 +214,8 @@ export default function CompetitorsPage() {
         <div className="mt-8 bg-gray-50 rounded-lg border border-gray-200 px-5 py-4">
           <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">How rate sources work</h3>
           <div className="text-xs text-gray-600 space-y-1.5">
-            <p><span className="font-medium text-blue-600">Primary sources</span> (Booking.com, Expedia) are checked first on every scrape cycle.</p>
-            <p><span className="font-medium text-green-600">Backup source</span> (Direct Booking Engine) is used automatically when OTA sources fail or are blocked.</p>
+            <p><span className="font-medium text-blue-600">Primary source</span> (Direct Booking Engine) is checked first on every scrape cycle.</p>
+            <p><span className="font-medium text-green-600">Backup sources</span> (Booking.com, Expedia) are used automatically when the direct booking engine is unavailable.</p>
             <p><span className="font-medium text-gray-700">Scrape Method Override</span> forces the system to always use a specific source, bypassing the automatic fallback logic.</p>
           </div>
         </div>
