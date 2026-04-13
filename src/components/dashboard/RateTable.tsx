@@ -5,20 +5,45 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 
 const HOTEL_COLORS = ['#378ADD','#639922','#E24B4A','#EF9F27','#7F77DD','#1D9E75','#D85A30','#D4537E','#B4B2A9','#5DCAA5']
-const VIEWS = ['Tonight','Weekend','+7 days','+30 days']
 const OTA_SOURCES = ['booking_com', 'expedia']
+
+export function getDateForView(viewIndex: number): string {
+  const now = new Date()
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  const addDays = (d: Date, n: number) => { const r = new Date(d); r.setDate(r.getDate() + n); return r }
+  const fmt = (d: Date) => d.toLocaleDateString('en-CA')
+  switch (viewIndex) {
+    case 1: {
+      const day = eastern.getDay()
+      const daysUntilSat = day === 6 ? 7 : (6 - day)
+      return fmt(addDays(eastern, daysUntilSat))
+    }
+    case 2: return fmt(addDays(eastern, 7))
+    case 3: return fmt(addDays(eastern, 30))
+    default: return fmt(eastern)
+  }
+}
+
+const VIEW_LABELS = ['Tonight','Weekend','+7 days','+30 days']
 
 interface RateTableProps {
   rates: DashboardRate[]
   onExpandCompetitor: (id: string, date: string) => Promise<RoomTypeRate[]>
+  onViewChange?: (viewIndex: number, date: string) => void
   loading?: boolean
+  activeView?: number
 }
 
-export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps) {
-  const [view, setView] = useState(0)
+export function RateTable({ rates, onExpandCompetitor, onViewChange, loading, activeView = 0 }: RateTableProps) {
   const [expanded, setExpanded] = useState<Record<string, RoomTypeRate[]>>({})
   const [expanding, setExpanding] = useState<string | null>(null)
   const [showOTA, setShowOTA] = useState<Record<string, boolean>>({})
+
+  function handleViewChange(idx: number) {
+    setExpanded({})
+    setShowOTA({})
+    onViewChange?.(idx, getDateForView(idx))
+  }
 
   const allRates = rates.filter(r => !r.is_your_hotel).map(r => r.rate_amount)
   const marketMin = allRates.length ? Math.min(...allRates) : 0
@@ -32,7 +57,7 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
       return
     }
     setExpanding(competitorId)
-    const rooms = await onExpandCompetitor(competitorId, new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }))
+    const rooms = await onExpandCompetitor(competitorId, getDateForView(activeView))
     setExpanded(prev => ({ ...prev, [competitorId]: rooms }))
     setExpanding(null)
   }
@@ -45,12 +70,12 @@ export function RateTable({ rates, onExpandCompetitor, loading }: RateTableProps
           <div className="text-xs text-gray-400 mt-0.5">BAR shown — click any row to expand room types</div>
         </div>
         <div className="flex bg-white rounded-lg border border-gray-200 p-0.5 gap-0.5">
-          {VIEWS.map((v, i) => (
+          {VIEW_LABELS.map((v, i) => (
             <button
               key={v}
-              onClick={() => setView(i)}
+              onClick={() => handleViewChange(i)}
               className={`text-xs px-3 h-7 rounded-md transition-colors ${
-                view === i
+                activeView === i
                   ? 'bg-gray-100 text-gray-900 font-medium'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
