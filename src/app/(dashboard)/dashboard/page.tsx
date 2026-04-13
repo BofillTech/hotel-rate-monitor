@@ -2,12 +2,15 @@
 import { useState } from 'react'
 import { useHotel } from '@/hooks/useHotel'
 import { useRates, fetchRoomTypes } from '@/hooks/useRates'
+import { useRateTrends } from '@/hooks/useRateTrends'
+import { useRateCalendar } from '@/hooks/useRateCalendar'
 import { useAlerts, useDismissAlert } from '@/hooks/useAlerts'
 import { KPICards } from '@/components/dashboard/KPICards'
 import { AlertBanner } from '@/components/dashboard/AlertBanner'
 import { RateTable } from '@/components/dashboard/RateTable'
 import { MarketPositionBar } from '@/components/dashboard/MarketPositionBar'
 import { RateTrendChart } from '@/components/dashboard/RateTrendChart'
+import { RateCalendar } from '@/components/dashboard/RateCalendar'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { formatRelativeTime } from '@/lib/utils'
@@ -20,6 +23,8 @@ export default function DashboardPage() {
   const { data: hotel } = useHotel()
   const { data: rates = [], isLoading: ratesLoading, refetch } = useRates(hotel?.id, checkIn)
   const { data: alerts = [] } = useAlerts(hotel?.id)
+  const { data: trendSeries = [], isLoading: trendsLoading } = useRateTrends(hotel?.id)
+  const { data: calendarDays = [], isLoading: calendarLoading } = useRateCalendar(hotel?.id)
   const dismissAlert = useDismissAlert()
 
   const yourRate = rates.find(r => r.is_your_hotel)
@@ -49,7 +54,7 @@ export default function DashboardPage() {
           <h1 className="text-xl font-semibold text-gray-900">{hotel?.name || 'Your Hotel'}</h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {lastUpdate ? `Updated ${lastUpdate}` : ratesLoading ? 'Loading...' : 'No rate data yet'}
-            {hotel?.city && ` · ${hotel.city}, ${hotel.state}`}
+            {hotel?.city && ` Â· ${hotel.city}, ${hotel.state}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -85,7 +90,7 @@ export default function DashboardPage() {
 
       {/* Main content grid */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        {/* Rate table — 2/3 width */}
+        {/* Rate table â 2/3 width */}
         <div className="col-span-2">
           <RateTable
             rates={rates}
@@ -96,7 +101,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Right column — 1/3 width */}
+        {/* Right column â 1/3 width */}
         <div className="space-y-4">
           {/* Your rate sources */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -108,9 +113,9 @@ export default function DashboardPage() {
                 <div className="text-xs font-medium text-gray-700">
                   {hotel?.pms_platform ? hotel.pms_platform.charAt(0).toUpperCase() + hotel.pms_platform.slice(1) : 'PMS'} API
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">Backup · direct</div>
+                <div className="text-xs text-gray-400 mt-0.5">Backup Â· direct</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
-                  {yourRate ? `$${yourRate.rate_amount}` : '—'}
+                  {yourRate ? `$${yourRate.rate_amount}` : 'â'}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -119,9 +124,9 @@ export default function DashboardPage() {
               </div>
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="text-xs font-medium text-gray-700">Booking engine</div>
-                <div className="text-xs text-gray-400 mt-0.5">Primary · direct URL</div>
+                <div className="text-xs text-gray-400 mt-0.5">Primary Â· direct URL</div>
                 <div className="text-lg font-semibold text-gray-900 mt-1">
-                  {yourRate ? `$${yourRate.rate_amount}` : '—'}
+                  {yourRate ? `$${yourRate.rate_amount}` : 'â'}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -156,16 +161,22 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Trend chart — full width */}
-      <RateTrendChart
-        series={rates.map((r) => ({
-          competitorId: r.competitor_id,
-          competitorName: r.competitor_name,
-          isSelf: r.is_your_hotel,
-          data: [],
-        }))}
-        loading={ratesLoading}
-      />
+      {/* Trend chart + Calendar â full width */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="col-span-2">
+          <RateTrendChart
+            series={trendSeries}
+            loading={trendsLoading}
+          />
+        </div>
+        <div>
+          <RateCalendar
+            days={calendarDays}
+            loading={calendarLoading}
+            currency={hotel?.currency}
+          />
+        </div>
+      </div>
     </div>
   )
 }
