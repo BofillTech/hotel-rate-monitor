@@ -33,7 +33,7 @@ export function RateCalendar({ days, loading, currency = 'USD' }: RateCalendarPr
     return (
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50">
-          <div className="text-sm font-medium text-gray-900">Rate calendar â next 30 days</div>
+          <div className="text-sm font-medium text-gray-900">Rate calendar -- next 30 days</div>
         </div>
         <div className="h-56 flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
@@ -46,7 +46,7 @@ export function RateCalendar({ days, loading, currency = 'USD' }: RateCalendarPr
     return (
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50">
-          <div className="text-sm font-medium text-gray-900">Rate calendar â next 30 days</div>
+          <div className="text-sm font-medium text-gray-900">Rate calendar -- next 30 days</div>
         </div>
         <div className="py-8 text-center text-sm text-gray-400">No rate data available</div>
       </div>
@@ -70,8 +70,8 @@ export function RateCalendar({ days, loading, currency = 'USD' }: RateCalendarPr
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gray-50">
         <div>
-          <div className="text-sm font-medium text-gray-900">Rate calendar â next 30 days</div>
-          <div className="text-xs text-gray-400 mt-0.5">Your BAR by date Â· click any date to compare</div>
+          <div className="text-sm font-medium text-gray-900">Rate calendar -- next 30 days</div>
+          <div className="text-xs text-gray-400 mt-0.5">Your BAR by date - click any date to compare</div>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-gray-400">
           <div className="flex items-center gap-1">
