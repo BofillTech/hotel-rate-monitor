@@ -40,14 +40,24 @@ export async function middleware(req: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  const isAuthPage = req.nextUrl.pathname.startsWith('/login')
+  const { pathname } = req.nextUrl
+  const isAuthPage = pathname.startsWith('/login')
+
+  // Redirect old /dashboard (exact) to /ratetracker/royalatlantic
+  // TODO: When multi-tenant auth is fully set up, resolve the user's hotel slug dynamically
+  if (pathname === '/dashboard' || pathname === '/dashboard/') {
+    return NextResponse.redirect(new URL('/ratetracker/royalatlantic', req.url))
+  }
+
   // Public token-based dashboards don't require auth
-  const isPublicDashboard = /^\/dashboard\/[^/]+$/.test(req.nextUrl.pathname)
-  const isDashboard = !isPublicDashboard && (
-    req.nextUrl.pathname.startsWith('/dashboard') ||
-    req.nextUrl.pathname.startsWith('/competitors') ||
-    req.nextUrl.pathname.startsWith('/alerts') ||
-    req.nextUrl.pathname.startsWith('/settings')
+  const isPublicDashboard = /^\/dashboard\/[^/]+$/.test(pathname)
+  // /ratetracker/[slug] routes are public (client-facing dashboards)
+  const isRateTracker = pathname.startsWith('/ratetracker/')
+  const isDashboard = !isPublicDashboard && !isRateTracker && (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/competitors') ||
+    pathname.startsWith('/alerts') ||
+    pathname.startsWith('/settings')
   )
 
   if (!session && isDashboard) {
@@ -55,13 +65,13 @@ export async function middleware(req: NextRequest) {
   }
 
   if (session && isAuthPage) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
+    return NextResponse.redirect(new URL('/ratetracker/royalatlantic', req.url))
   }
 
   return res
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/competitors/:path*',
+  matcher: ['/dashboard/:path*', '/ratetracker/:path*', '/competitors/:path*',
             '/alerts/:path*', '/settings/:path*', '/login']
 }
