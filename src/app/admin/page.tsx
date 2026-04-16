@@ -58,11 +58,13 @@ export default async function AdminHotelsPage() {
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {[hotel.city, hotel.state].filter(Boolean).join(', ') || '\u2014'}
+                  {[hotel.city, hotel.state].filter(Boolean).join(', ') || 'â'}
                 </td>
                 <td className="px-6 py-4">
                   {hotel.slug ? (
-                    <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-700">/ratetracker/{hotel.slug}</code>
+                    <a href={`/ratetracker/${hotel.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs bg-gray-100 px-2 py-0.5 rounded text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-mono transition-colors">
+                      /ratetracker/{hotel.slug}
+                    </a>
                   ) : (
                     <span className="text-xs text-gray-400">Not set</span>
                   )}
@@ -97,4 +99,3 @@ export default async function AdminHotelsPage() {
     </div>
   )
 }
-
