@@ -53,6 +53,7 @@ export async function middleware(req: NextRequest) {
   const isPublicDashboard = /^\/dashboard\/[^/]+$/.test(pathname)
   // /ratetracker/[slug] routes are public (client-facing dashboards)
   const isRateTracker = pathname.startsWith('/ratetracker/')
+  const isAdmin = pathname.startsWith('/admin')
   const isDashboard = !isPublicDashboard && !isRateTracker && (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/competitors') ||
@@ -60,7 +61,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/settings')
   )
 
-  if (!session && isDashboard) {
+  if (!session && (isDashboard || isAdmin)) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
@@ -73,5 +74,5 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: ['/dashboard/:path*', '/ratetracker/:path*', '/competitors/:path*',
-            '/alerts/:path*', '/settings/:path*', '/login']
+            '/alerts/:path*', '/settings/:path*', '/admin/:path*', '/login']
 }
