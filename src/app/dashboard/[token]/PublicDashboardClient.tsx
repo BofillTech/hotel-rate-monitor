@@ -7,6 +7,8 @@ import { RateTrendChart } from '@/components/dashboard/RateTrendChart'
 import { MarketPositionBar } from '@/components/dashboard/MarketPositionBar'
 import { RateSourcesPanel } from '@/components/dashboard/RateSourcesPanel'
 import { Badge } from '@/components/ui/Badge'
+import MarketAlerts from '@/components/dashboard/MarketAlerts'
+import AIRateSuggestions from '@/components/dashboard/AIRateSuggestions'
 import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 
 const HOTEL_COLORS = ['#378ADD','#639922','#E24B4A','#EF9F27','#7F77DD','#1D9E75','#D85A30','#D4537E','#B4B2A9','#5DCAA5']
@@ -200,7 +202,9 @@ function RateComparisonSection({
                 </tr>
 
                 {/* Expanded room types */}
-                {isOpen && row.roomTypes.map((rt, ri) => (
+                {isOpen && row.roomTypes
+                  .filter(rt => !rt.room_type_name || rt.room_type_name.toLowerCase() !== 'room')
+                  .map((rt, ri) => (
                   <tr key={`${row.competitor_id}-rt-${ri}`} className="bg-gray-50/50 border-b border-gray-50">
                     <td />
                     <td className="px-3 py-2.5 pl-12">
@@ -460,8 +464,35 @@ export function PublicDashboardClient({ data }: { data: DashboardData }) {
           </div>
         </div>
 
-        {/* -- 30-Day Rate Trends ------------------------------------ */}
-        <RateTrendChart series={trendSeries} currency={hotel.currency} />
+        {/* -- 30-Day Rate Trends + AI Suggestions ------------------- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50">
+              <div className="text-sm font-medium text-gray-900">30-day rate trends</div>
+            </div>
+            <div className="p-4">
+              <RateTrendChart series={trendSeries} currency={hotel.currency} />
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50">
+              <div className="text-sm font-medium text-gray-900">AI rate suggestions</div>
+            </div>
+            <div className="p-4">
+              <AIRateSuggestions />
+            </div>
+          </div>
+        </div>
+
+        {/* -- Market Alerts ----------------------------------------- */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mt-4">
+          <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50">
+            <div className="text-sm font-medium text-gray-900">Market alerts</div>
+          </div>
+          <div className="p-4">
+            <MarketAlerts />
+          </div>
+        </div>
 
         {/* -- Scrape Health ------------------------------------------ */}
         <div className="mt-4">
