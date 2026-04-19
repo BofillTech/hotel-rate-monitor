@@ -82,6 +82,28 @@ function RateComparisonSection({
     })
   }, [rows])
 
+  // Rate anomaly detection: flag BAR rates >40% below competitor's own room-type average
+  const anomalyFlags = useMemo(() => {
+    const flags = new Map<string, boolean>()
+    for (const row of sorted) {
+      if (row.is_self || !row.bar) {
+        flags.set(row.competitor_id, false)
+        continue
+      }
+      // Compare BAR against the average of the OTHER (non-BAR) room types
+      const otherRates = row.roomTypes
+        .filter(rt => !rt.is_bar && rt.rate_amount !== row.bar!.rate_amount)
+        .map(rt => rt.rate_amount)
+      if (otherRates.length < 1) {
+        flags.set(row.competitor_id, false)
+        continue
+      }
+      const avg = otherRates.reduce((a, b) => a + b, 0) / otherRates.length
+      flags.set(row.competitor_id, row.bar.rate_amount < avg * 0.6)
+    }
+    return flags
+  }, [sorted])
+
   const selfRate = sorted.find(r => r.is_self)?.bar?.rate_amount ?? null
   const compRates = sorted.filter(r => !r.is_self && r.bar).map(r => r.bar!.rate_amount)
   const marketMin = compRates.length ? Math.min(...compRates) : null
@@ -174,9 +196,16 @@ function RateComparisonSection({
                   </td>
                   <td className="px-3 py-3 text-right">
                     {barRate !== null ? (
-                      <span className={`font-semibold ${isMin ? 'text-green-700' : isMax ? 'text-red-600' : 'text-gray-900'}`}>
-                        {formatCurrency(barRate, currency)}
-                      </span>
+                      <div>
+                        <span className={`font-semibold ${isMin ? 'text-green-700' : isMax ? 'text-red-600' : 'text-gray-900'} ${anomalyFlags.get(row.competitor_id) ? 'border border-amber-300 rounded px-1.5 py-0.5 bg-amber-50' : ''}`}>
+                          {formatCurrency(barRate, currency)}
+                        </span>
+                        {anomalyFlags.get(row.competitor_id) && (
+                          <div className="text-[10px] text-amber-600 mt-0.5 whitespace-nowrap" title="This rate is 40%+ below this property\u2019s other room types \u2014 may be a restricted or non-refundable rate">
+                            {'\u26A0'} Possibly restricted
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-gray-300">{'\u2014'}</span>
                     )}
