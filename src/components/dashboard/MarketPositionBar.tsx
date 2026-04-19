@@ -1,67 +1,4 @@
 'use client'
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  ResponsiveContainer,
-  Cell,
-  LabelList,
-} from 'recharts'
-import { formatCurrency } from '@/lib/utils'
-
-interface MarketPositionBarProps {
-  yourRate: number
-  marketMin: number
-  marketMax: number
-  competitors: Array<{ name: string; rate: number; color: string }>
-}
-
-export function MarketPositionBar({
-  yourRate,
-  marketMin,
-  marketMax,
-  competitors,
-}: MarketPositionBarProps) {
-  // Build data: your hotel + all competitors, sorted by rate
-  const allEntries = [
-    { name: 'You', rate: yourRate, isSelf: true },
-    ...competitors.map((c) => ({ name: c.name, rate: c.rate, isSelf: false })),
-  ].sort((a, b) => a.rate - b.rate)
-
-  const yourPosition = allEntries.findIndex((e) => e.isSelf) + 1
-  const totalCount = allEntries.length
-
-  // Market average (competitors only)
-  const compRates = competitors.map((c) => c.rate)
-  const marketAvg = compRates.length
-    ? Math.round(compRates.reduce((a, b) => a + b, 0) / compRates.length)
-    : yourRate
-
-  // Truncate long names
-  const truncate = (s: string, max = 14) =>
-    s.length > max ? s.slice(0, max - 1) + '\u2026' : s
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload?.[0]) return null
-    const d = payload[0].payload
-    const diff = d.rate - yourRate
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-2.5 text-xs">
-        <p className="font-semibold text-gray-900">{d.name}</p>
-        <p className="text-gray-600 mt-0.5">
-          {formatCurrency(d.rate)}{' '}
-          {!d.isSelf && (
-            <span className={diff < 0 ? 'text-green-600' : diff > 0 ? 'text-red-500' : 'text-gray-400'}>
-              ({diff > 0 ? '+' : ''}
-              {formatCurrency(diff)} vs you)
-            </span>
-          )}
         </p>
       </div>
     )
@@ -131,7 +68,7 @@ export function MarketPositionBar({
                 dataKey="rate"
                 position="right"
                 style={{ fontSize: '10px', fill: '#6b7280' }}
-                formatter={(v: number) => formatCurrency(v)}
+                formatter={(v: string | number) => formatCurrency(Number(v))}
               />
             </Bar>
           </BarChart>
@@ -146,13 +83,3 @@ export function MarketPositionBar({
             {formatCurrency(marketMin)}
           </div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2.5">
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">Highest comp</div>
-          <div className="text-base font-semibold text-red-600 mt-0.5">
-            {formatCurrency(marketMax)}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
