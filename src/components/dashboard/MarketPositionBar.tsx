@@ -131,7 +131,7 @@ export function MarketPositionBar({
                 dataKey="rate"
                 position="right"
                 style={{ fontSize: '10px', fill: '#6b7280' }}
-                formatter={(v: string | number) => formatCurrency(Number(v))}
+                formatter={(v: any) => formatCurrency(Number(v))}
               />
             </Bar>
           </BarChart>
@@ -156,3 +156,4 @@ export function MarketPositionBar({
     </div>
   )
 }
+
