@@ -203,7 +203,7 @@ function RateComparisonSection({
 
                 {/* Expanded room types */}
                 {isOpen && row.roomTypes
-                  .filter(rt => !rt.room_type_name || rt.room_type_name.toLowerCase() !== 'room')
+                  .filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')
                   .map((rt, ri) => (
                   <tr key={`${row.competitor_id}-rt-${ri}`} className="bg-gray-50/50 border-b border-gray-50">
                     <td />
