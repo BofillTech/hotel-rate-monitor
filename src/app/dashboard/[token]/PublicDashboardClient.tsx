@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import type { DashboardData, CompetitorWithRates } from './page'
 import { KPICards } from '@/components/dashboard/KPICards'
 import { RateTrendChart } from '@/components/dashboard/RateTrendChart'
@@ -168,7 +168,7 @@ function RateComparisonSection({
             const hasRoomTypes = row.roomTypes.length > 0
 
             return (
-              <tbody key={row.competitor_id}>
+              <Fragment key={row.competitor_id}>
                 {/* Main row */}
                 <tr
                   onClick={() => hasRoomTypes && toggleExpand(row.competitor_id)}
@@ -201,7 +201,7 @@ function RateComparisonSection({
                           {formatCurrency(barRate, currency)}
                         </span>
                         {anomalyFlags.get(row.competitor_id) && (
-                          <div className="text-[10px] text-amber-600 mt-0.5 whitespace-nowrap" title="This rate is 40%+ below this property\u2019s other room types \u2014 may be a restricted or non-refundable rate">
+                          <div className="text-[10px] text-amber-600 mt-0.5 whitespace-nowrap" title="This rate is 40%+ below this property's other room types \u2014 may be a restricted or non-refundable rate">
                             {'\u26A0'} Possibly restricted
                           </div>
                         )}
@@ -232,7 +232,7 @@ function RateComparisonSection({
 
                 {/* Expanded room types */}
                 {isOpen && row.roomTypes
-                  .filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')
+                  .filter(rt => !rt.room_type_name || rt.room_type_name.toLowerCase() !== 'room')
                   .map((rt, ri) => (
                   <tr key={`${row.competitor_id}-rt-${ri}`} className="bg-gray-50/50 border-b border-gray-50">
                     <td />
@@ -255,7 +255,7 @@ function RateComparisonSection({
                     <td colSpan={4} />
                   </tr>
                 ))}
-              </tbody>
+              </Fragment>
             )
           })}
         </tbody>
