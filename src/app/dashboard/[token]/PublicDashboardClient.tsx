@@ -1,4 +1,4 @@
-h'use client'
+'use client'
 
 import { useState, useMemo, Fragment } from 'react'
 import type { DashboardData, CompetitorWithRates } from './page'
