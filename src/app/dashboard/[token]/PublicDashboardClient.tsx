@@ -165,7 +165,8 @@ function RateComparisonSection({
               : null
             const isMin = !row.is_self && barRate !== null && barRate === marketMin
             const isMax = !row.is_self && barRate !== null && barRate === marketMax
-            const meaningfulRooms = row.roomTypes.filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')            const hasRoomTypes = meaningfulRooms.length > 0
+            const meaningfulRooms = row.roomTypes.filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')
+            const hasRoomTypes = meaningfulRooms.length > 0
 
             return (
               <Fragment key={row.competitor_id}>
