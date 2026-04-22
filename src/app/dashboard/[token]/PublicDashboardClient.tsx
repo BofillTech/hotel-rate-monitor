@@ -165,8 +165,7 @@ function RateComparisonSection({
               : null
             const isMin = !row.is_self && barRate !== null && barRate === marketMin
             const isMax = !row.is_self && barRate !== null && barRate === marketMax
-            const meaningfulRooms = row.roomTypes.filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')
-            const hasRoomTypes = meaningfulRooms.length > 0
+            const hasRoomTypes = row.roomTypes.length > 0
 
             return (
               <Fragment key={row.competitor_id}>
@@ -233,14 +232,13 @@ function RateComparisonSection({
 
                 {/* Expanded room types */}
                 {isOpen && row.roomTypes
-                  .filter(rt => rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room')
                   .map((rt, ri) => (
                   <tr key={`${row.competitor_id}-rt-${ri}`} className="bg-gray-50/50 border-b border-gray-50">
                     <td />
                     <td className="px-3 py-2.5 pl-12">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-600">
-                          {rt.room_type_name}
+                          {rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room' ? rt.room_type_name : categoryLabel(rt.room_type_category) || 'Standard Room'}
                         </span>
                         {categoryLabel(rt.room_type_category) && (
                           <Badge variant="blue">{categoryLabel(rt.room_type_category)}</Badge>
