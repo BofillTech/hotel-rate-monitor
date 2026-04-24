@@ -5,8 +5,28 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { PublicDashboardClient } from '@/app/dashboard/[token]/PublicDashboardClient'
 import type { CompetitorWithRates, TrendSeries, TrendPoint, DashboardData } from '@/app/dashboard/[token]/page'
 
+/* ---- Room type name normalization ---- */
+const OTA_NAMES = new Set([
+  'Official Site','Google Hotels','Priceline','Orbitz',
+  'Travelocity','KAYAK','Trivago','Hotwire','Wego',
+  'eDreams','Snaptravel','Prestigia','Decolar','Skyscanner',
+  'HotelsCombined','Qantas Hotels','Room','Agoda',
+  'Super','CheapTickets','Hotels','Expedia',
+])
+
+function normalizeRoomType(name: string | null | undefined): string {
+  if (!name || name.trim() === '') return 'Standard Room'
+  // Domain-like: has dot, no spaces, under 30 chars
+  if (name.includes('.') && !name.includes(' ') && name.length < 30) return 'Standard Room'
+  // Known OTA / source names
+  if (OTA_NAMES.has(name)) return 'Standard Room'
+  // Promo / cancellation text
+  if (/^(Free cancellation|Pay at the|Book now|Price dropped|Member price|Price match|\d+% off)/i.test(name)) return 'Standard Room'
+  return name
+}
+
 /* ------------------------------------------------------------------ */
-/*  Server component â resolves slug instead of token                  */
+/*  Server component Ã¢ÂÂ resolves slug instead of token                  */
 /* ------------------------------------------------------------------ */
 
 export default async function RateTrackerDashboard({
@@ -17,7 +37,7 @@ export default async function RateTrackerDashboard({
   const { slug } = await params
   const supabase = createServiceClient()
 
-  /* 1. Resolve slug â hotel */
+  /* 1. Resolve slug Ã¢ÂÂ hotel */
   const { data: hotel } = await (supabase as any)
     .from('hotels')
     .select('id, name, city, state, currency, pms_platform, booking_engine_url, check_frequency_mins')
@@ -86,7 +106,7 @@ export default async function RateTrackerDashboard({
         (s: any) => s.competitor_id === c.id && s.check_in_date === dateOpt.value
       )
       const roomTypes = dateSnaps.map((s: any) => ({
-        room_type_name: s.room_type_name,
+        room_type_name: normalizeRoomType(s.room_type_name),
         room_type_category: s.room_type_category,
         rate_amount: s.rate_amount,
         is_bar: s.is_bar,
@@ -98,7 +118,7 @@ export default async function RateTrackerDashboard({
       ratesByDate[dateOpt.value] = {
         bar: barSnap ? {
           rate_amount: barSnap.rate_amount,
-          room_type_name: barSnap.room_type_name,
+          room_type_name: normalizeRoomType(barSnap.room_type_name),
           room_type_category: barSnap.room_type_category,
           source: barSnap.source,
           scraped_at: barSnap.scraped_at,
@@ -139,7 +159,7 @@ export default async function RateTrackerDashboard({
 
   const allTrends = trendSnaps || []
 
-  /* Build trend series â use only "tonight" rates (check_in == scrape day)
+  /* Build trend series Ã¢ÂÂ use only "tonight" rates (check_in == scrape day)
      and prefer BAR-flagged rates. For each competitor per scrape-day,
      keep the lowest rate to represent their market position that day. */
   const trendMap = new Map<string, Map<string, number>>()
@@ -150,7 +170,7 @@ export default async function RateTrackerDashboard({
     const rate = (snap as any).rate_amount
 
     // Only include rates where check_in_date matches the scrape day
-    // (Â±1 day to handle overnight scrapes)
+    // (ÃÂ±1 day to handle overnight scrapes)
     const scrapeDayMs = new Date(scrapeDay).getTime()
     const checkInMs = new Date(checkIn).getTime()
     const dayDiff = Math.abs(checkInMs - scrapeDayMs) / (1000 * 60 * 60 * 24)
