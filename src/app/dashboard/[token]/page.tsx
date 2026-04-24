@@ -4,6 +4,23 @@ import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/server'
 import { PublicDashboardClient } from './PublicDashboardClient'
 
+/* ---- Room type name normalization ---- */
+const OTA_NAMES = new Set([
+  'Official Site','Google Hotels','Priceline','Orbitz',
+  'Travelocity','KAYAK','Trivago','Hotwire','Wego',
+  'eDreams','Snaptravel','Prestigia','Decolar','Skyscanner',
+  'HotelsCombined','Qantas Hotels','Room','Agoda',
+  'Super','CheapTickets','Hotels','Expedia',
+])
+
+function normalizeRoomType(name: string | null | undefined): string {
+  if (!name || name.trim() === '') return 'Standard Room'
+  if (name.includes('.') && !name.includes(' ') && name.length < 30) return 'Standard Room'
+  if (OTA_NAMES.has(name)) return 'Standard Room'
+  if (/^(Free cancellation|Pay at the|Book now|Price dropped|Member price|Price match|\d+% off)/i.test(name)) return 'Standard Room'
+  return name
+}
+
 /* ------------------------------------------------------------------ */
 /*  Types for data we pass to the client                               */
 /* ------------------------------------------------------------------ */
@@ -152,7 +169,7 @@ export default async function PublicDashboardPage({
         (s: any) => s.competitor_id === c.id && s.check_in_date === dateOpt.value
       )
       const roomTypes = dateSnaps.map((s: any) => ({
-        room_type_name: s.room_type_name,
+        room_type_name: normalizeRoomType(s.room_type_name),
         room_type_category: s.room_type_category,
         rate_amount: s.rate_amount,
         is_bar: s.is_bar,
@@ -164,7 +181,7 @@ export default async function PublicDashboardPage({
       ratesByDate[dateOpt.value] = {
         bar: barSnap ? {
           rate_amount: barSnap.rate_amount,
-          room_type_name: barSnap.room_type_name,
+          room_type_name: normalizeRoomType(barSnap.room_type_name),
           room_type_category: barSnap.room_type_category,
           source: barSnap.source,
           scraped_at: barSnap.scraped_at,
