@@ -21,6 +21,11 @@ function normalizeRoomType(name: string | null | undefined): string {
   return name
 }
 
+/* Returns true if the raw DB room_type_name is a real room name (not a placeholder) */
+function hasRealRoomName(name: string | null | undefined): boolean {
+  return normalizeRoomType(name) !== 'Standard Room'
+}
+
 /* ---- Room type categorization (groups granular names into broad buckets) ---- */
 function categorizeRoom(name: string): string {
   const lower = name.toLowerCase()
@@ -244,14 +249,18 @@ export default async function PublicDashboardPage({
       const dateSnaps = deduped.filter(
         (s: any) => s.competitor_id === c.id && s.check_in_date === dateOpt.value
       )
-      const rawRoomTypes = dateSnaps.map((s: any) => ({
-        room_type_name: normalizeRoomType(s.room_type_name),
-        room_type_category: s.room_type_category,
-        rate_amount: s.rate_amount,
-        is_bar: s.is_bar,
-        source: s.source,
-        scraped_at: s.scraped_at,
-      })).filter((rt: any) => rt.room_type_name !== 'Standard Room')
+      // Filter out entries with no real room name (null, OTA source names, etc.)
+      // then normalize the remaining real names
+      const rawRoomTypes = dateSnaps
+        .filter((s: any) => hasRealRoomName(s.room_type_name))
+        .map((s: any) => ({
+          room_type_name: normalizeRoomType(s.room_type_name),
+          room_type_category: s.room_type_category,
+          rate_amount: s.rate_amount,
+          is_bar: s.is_bar,
+          source: s.source,
+          scraped_at: s.scraped_at,
+        }))
       // Group by category to collapse 40+ entries into ~5 categories
       const roomTypes = groupRoomTypesByCategory(rawRoomTypes)
       const barSnap = dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
@@ -331,4 +340,5 @@ export default async function PublicDashboardPage({
 
   return <PublicDashboardClient data={dashboardData} />
 }
+
 
