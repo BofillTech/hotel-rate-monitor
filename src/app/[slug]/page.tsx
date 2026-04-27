@@ -25,6 +25,82 @@ function normalizeRoomType(name: string | null | undefined): string {
   return name
 }
 
+/* ---- Room type categorization (groups granular names into broad buckets) ---- */
+function categorizeRoom(name: string): string {
+  const lower = name.toLowerCase()
+  if (lower.includes('penthouse')) return 'penthouse'
+  if (lower.includes('villa') || lower.includes('cottage') || lower.includes('bungalow') || lower.includes('casita')) return 'villa'
+  if (lower.includes('suite')) return 'suite'
+  if (lower.includes('studio')) return 'studio'
+  if (lower.includes('ocean') || lower.includes('sea') || lower.includes('beach') || lower.includes('waterfront') || lower.includes('oceanfront')) return 'oceanfront'
+  if (lower.includes('pool')) return 'pool_view'
+  if (lower.includes('garden')) return 'garden_view'
+  if (lower.includes('deluxe') || lower.includes('premier') || lower.includes('superior')) return 'deluxe'
+  return 'standard'
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  standard: 'Standard Room',
+  deluxe: 'Deluxe Room',
+  suite: 'Suite',
+  penthouse: 'Penthouse',
+  villa: 'Villa / Cottage',
+  studio: 'Studio',
+  oceanfront: 'Oceanfront',
+  pool_view: 'Pool View',
+  garden_view: 'Garden View',
+}
+
+/* Group room types by category, keep only the BAR (lowest rate) per category */
+function groupRoomTypesByCategory(roomTypes: Array<{
+  room_type_name: string | null
+  room_type_category: string | null
+  rate_amount: number
+  is_bar: boolean
+  source: string
+  scraped_at: string
+}>): Array<{
+  room_type_name: string | null
+  room_type_category: string | null
+  rate_amount: number
+  is_bar: boolean
+  source: string
+  scraped_at: string
+}> {
+  if (roomTypes.length <= 1) return roomTypes
+
+  const groups = new Map<string, typeof roomTypes>()
+  for (const rt of roomTypes) {
+    const cat = categorizeRoom(rt.room_type_name || 'Standard Room')
+    if (!groups.has(cat)) groups.set(cat, [])
+    groups.get(cat)!.push(rt)
+  }
+
+  const result: typeof roomTypes = []
+  const catOrder = ['standard', 'deluxe', 'studio', 'oceanfront', 'pool_view', 'garden_view', 'suite', 'villa', 'penthouse']
+  const sortedCats = Array.from(groups.keys()).sort((a, b) => {
+    const ai = catOrder.indexOf(a)
+    const bi = catOrder.indexOf(b)
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+  })
+
+  for (const cat of sortedCats) {
+    const items = groups.get(cat)!
+    items.sort((a, b) => a.rate_amount - b.rate_amount)
+    const best = items[0]
+    const count = items.length
+    result.push({
+      ...best,
+      room_type_name: count > 1
+        ? `${CATEGORY_LABELS[cat] || cat} (from $${best.rate_amount.toLocaleString()})`
+        : best.room_type_name,
+      room_type_category: cat,
+    })
+  }
+
+  return result
+}
+
 /* ------------------------------------------------------------------ */
 /*  Server component Ã¢ÂÂ resolves slug instead of token                  */
 /* ------------------------------------------------------------------ */
@@ -105,7 +181,7 @@ export default async function RateTrackerDashboard({
       const dateSnaps = deduped.filter(
         (s: any) => s.competitor_id === c.id && s.check_in_date === dateOpt.value
       )
-      const roomTypes = dateSnaps.map((s: any) => ({
+      const rawRoomTypes = dateSnaps.map((s: any) => ({
         room_type_name: normalizeRoomType(s.room_type_name),
         room_type_category: s.room_type_category,
         rate_amount: s.rate_amount,
@@ -113,6 +189,8 @@ export default async function RateTrackerDashboard({
         source: s.source,
         scraped_at: s.scraped_at,
       }))
+      // Group by category to collapse 40+ entries into ~5 categories
+      const roomTypes = groupRoomTypesByCategory(rawRoomTypes)
       const barSnap = dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
 
       ratesByDate[dateOpt.value] = {
