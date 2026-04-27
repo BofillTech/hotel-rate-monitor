@@ -34,9 +34,15 @@ function categoryLabel(cat: string | null) {
   if (!cat) return null
   const map: Record<string, string> = {
     standard: 'Standard',
+    deluxe: 'Deluxe',
     ocean_view: 'Oceanfront',
+    oceanfront: 'Oceanfront',
     suite: 'Suite',
-    pool_view: 'Pool view',
+    penthouse: 'Penthouse',
+    villa: 'Villa',
+    studio: 'Studio',
+    pool_view: 'Pool View',
+    garden_view: 'Garden View',
     other: 'Other',
   }
   return map[cat] || cat
