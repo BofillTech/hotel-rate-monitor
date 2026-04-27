@@ -251,7 +251,7 @@ export default async function PublicDashboardPage({
         is_bar: s.is_bar,
         source: s.source,
         scraped_at: s.scraped_at,
-      })).filter(rt => rt.room_type_name !== 'Standard Room')
+      })).filter((rt: any) => rt.room_type_name !== 'Standard Room')
       // Group by category to collapse 40+ entries into ~5 categories
       const roomTypes = groupRoomTypesByCategory(rawRoomTypes)
       const barSnap = dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
@@ -331,3 +331,4 @@ export default async function PublicDashboardPage({
 
   return <PublicDashboardClient data={dashboardData} />
 }
+
