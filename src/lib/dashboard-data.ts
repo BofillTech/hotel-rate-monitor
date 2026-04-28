@@ -268,6 +268,39 @@ export async function buildDashboardData(
       const roomTypes = groupRoomTypesByCategory(rawRoomTypes)
       const barSnap = dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
 
+      // Fallback: if we have a BAR rate but no real room type names were found
+      // (common with google_hotels which returns null room_type_name),
+      // inject the BAR as a room type entry so the UI always has something to show.
+      if (roomTypes.length === 0 && barSnap) {
+        const barName = normalizeRoomType(barSnap.room_type_name)
+        const barCat = categorizeRoom(barName)
+        roomTypes.push({
+          room_type_name: barName,
+          room_type_category: barCat,
+          rate_amount: barSnap.rate_amount,
+          is_bar: true,
+          source: barSnap.source,
+          scraped_at: barSnap.scraped_at,
+        })
+      }
+
+      // Second fallback: if we have rate snapshots but neither a BAR nor real room names,
+      // use the lowest-priced snapshot so the property still shows an expandable row.
+      if (roomTypes.length === 0 && dateSnaps.length > 0) {
+        const sorted = [...dateSnaps].sort((a: any, b: any) => a.rate_amount - b.rate_amount)
+        const lowest = sorted[0]
+        const lowName = normalizeRoomType(lowest.room_type_name)
+        const lowCat = categorizeRoom(lowName)
+        roomTypes.push({
+          room_type_name: lowName,
+          room_type_category: lowCat,
+          rate_amount: lowest.rate_amount,
+          is_bar: false,
+          source: lowest.source,
+          scraped_at: lowest.scraped_at,
+        })
+      }
+
       ratesByDate[dateOpt.value] = {
         bar: barSnap ? {
           rate_amount: barSnap.rate_amount,
@@ -307,7 +340,7 @@ export async function buildDashboardData(
 
   const allTrends = trendSnaps || []
 
-  /* Build trend series - use only "tonight" rates (check_in == scrape day)
+  /* Build trend series — use only "tonight" rates (check_in == scrape day)
      and prefer BAR-flagged rates. For each competitor per scrape-day,
      keep the lowest rate to represent their market position that day. */
   const trendMap = new Map<string, Map<string, number>>()
@@ -318,7 +351,7 @@ export async function buildDashboardData(
     const rate = (snap as any).rate_amount
 
     // Only include rates where check_in_date matches the scrape day
-    // (+/-1 day to handle overnight scrapes)
+    // (±1 day to handle overnight scrapes)
     const scrapeDayMs = new Date(scrapeDay).getTime()
     const checkInMs = new Date(checkIn).getTime()
     const dayDiff = Math.abs(checkInMs - scrapeDayMs) / (1000 * 60 * 60 * 24)
