@@ -48,6 +48,18 @@ function categoryLabel(cat: string | null) {
   return map[cat] || cat
 }
 
+/** Display label for a room: prefer real name, fall back to category label
+ *  (but NOT when category is the actor's default 'standard' which is meaningless),
+ *  otherwise show an em-dash. */
+function displayRoomLabel(name: string | null | undefined, category: string | null | undefined): string {
+  if (name && name.trim().toLowerCase() !== 'room') return name
+  if (category && category !== 'standard') {
+    const lbl = categoryLabel(category)
+    if (lbl) return lbl
+  }
+  return '—'
+}
+
 /* ------------------------------------------------------------------ */
 /*  Rate Comparison Table with expand/collapse                         */
 /* ------------------------------------------------------------------ */
@@ -226,7 +238,7 @@ function RateComparisonSection({
                     )}
                   </td>
                   <td className="px-3 py-3 text-xs text-gray-500 truncate">
-                    {row.bar?.room_type_name && row.bar.room_type_name.toLowerCase() !== 'room' ? row.bar.room_type_name : categoryLabel(row.bar?.room_type_category ?? null) || 'Standard Room'}
+                    {displayRoomLabel(row.bar?.room_type_name, row.bar?.room_type_category)}
                   </td>
                   <td className="px-3 py-3 text-xs text-gray-400">
                     {row.bar ? sourceLabel(row.bar.source) : '\u2014'}
@@ -244,7 +256,7 @@ function RateComparisonSection({
                     <td className="px-3 py-2.5 pl-12">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-600">
-                          {rt.room_type_name && rt.room_type_name.trim().toLowerCase() !== 'room' ? rt.room_type_name : categoryLabel(rt.room_type_category) || 'Standard Room'}
+                          {displayRoomLabel(rt.room_type_name, rt.room_type_category)}
                         </span>
                         {categoryLabel(rt.room_type_category) && (
                           <Badge variant="blue">{categoryLabel(rt.room_type_category)}</Badge>
