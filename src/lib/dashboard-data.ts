@@ -76,17 +76,17 @@ const OTA_NAMES = new Set([
   'Super','CheapTickets','Hotels','Expedia',
 ])
 
-function normalizeRoomType(name: string | null | undefined): string {
-  if (!name || name.trim() === '') return 'Standard Room'
-  if (name.includes('.') && !name.includes(' ') && name.length < 30) return 'Standard Room'
-  if (OTA_NAMES.has(name)) return 'Standard Room'
-  if (/^(Free cancellation|Pay at the|Book now|Price dropped|Member price|Price match|\d+% off)/i.test(name)) return 'Standard Room'
+function normalizeRoomType(name: string | null | undefined): string | null {
+  if (!name || name.trim() === '') return null
+  if (name.includes('.') && !name.includes(' ') && name.length < 30) return null
+  if (OTA_NAMES.has(name)) return null
+  if (/^(Free cancellation|Pay at the|Book now|Price dropped|Member price|Price match|\d+% off)/i.test(name)) return null
   return name
 }
 
 /** Returns true if the raw DB room_type_name is a real room name (not a placeholder). */
 function hasRealRoomName(name: string | null | undefined): boolean {
-  return normalizeRoomType(name) !== 'Standard Room'
+  return normalizeRoomType(name) !== null
 }
 
 /* ------------------------------------------------------------------ */
@@ -273,7 +273,7 @@ export async function buildDashboardData(
       // inject the BAR as a room type entry so the UI always has something to show.
       if (roomTypes.length === 0 && barSnap) {
         const barName = normalizeRoomType(barSnap.room_type_name)
-        const barCat = categorizeRoom(barName)
+        const barCat = categorizeRoom(barName || '')
         roomTypes.push({
           room_type_name: barName,
           room_type_category: barCat,
@@ -290,7 +290,7 @@ export async function buildDashboardData(
         const sorted = [...dateSnaps].sort((a: any, b: any) => a.rate_amount - b.rate_amount)
         const lowest = sorted[0]
         const lowName = normalizeRoomType(lowest.room_type_name)
-        const lowCat = categorizeRoom(lowName)
+        const lowCat = categorizeRoom(lowName || '')
         roomTypes.push({
           room_type_name: lowName,
           room_type_category: lowCat,
