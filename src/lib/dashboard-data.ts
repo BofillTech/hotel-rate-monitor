@@ -266,7 +266,12 @@ export async function buildDashboardData(
         }))
       // Group by category to collapse 40+ entries into ~5 categories
       const roomTypes = groupRoomTypesByCategory(rawRoomTypes)
-      const barSnap = dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
+      // Prefer cheapest rate with a real room name (avoids picking up google_hotels
+      // placeholder rows that have NULL room_type_name and misleading aggregator rates)
+      const cheapestReal = dateSnaps
+        .filter((s: any) => hasRealRoomName(s.room_type_name))
+        .sort((a: any, b: any) => a.rate_amount - b.rate_amount)[0]
+      const barSnap = cheapestReal || dateSnaps.find((s: any) => s.is_bar) || (dateSnaps.length === 1 ? dateSnaps[0] : null)
 
       // Fallback: if we have a BAR rate but no real room type names were found
       // (common with google_hotels which returns null room_type_name),
