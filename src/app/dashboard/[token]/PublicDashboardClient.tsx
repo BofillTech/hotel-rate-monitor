@@ -258,7 +258,7 @@ function RateComparisonSection({
                         <span className="text-xs text-gray-600">
                           {displayRoomLabel(rt.room_type_name, rt.room_type_category)}
                         </span>
-                        {categoryLabel(rt.room_type_category) && (
+                        {displayRoomLabel(rt.room_type_name, rt.room_type_category) !== '—' && categoryLabel(rt.room_type_category) && (
                           <Badge variant="blue">{categoryLabel(rt.room_type_category)}</Badge>
                         )}
                         {rt.is_bar && <Badge variant="teal">BAR</Badge>}
